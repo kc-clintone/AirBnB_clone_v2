@@ -23,9 +23,9 @@ This repository contains the initial stage of a student project to build a clone
 <br>
 <center> <h2>General Use</h2> </center>
 
-1. First clone this repository.
+1. First, clone this repository.
 
-3. Once the repository is cloned locate the "console.py" file and run it as follows:
+3. Once done, locate the "console.py" file and run it as follows:
 ```
 /AirBnB_clone$ ./console.py
 ```
@@ -33,7 +33,7 @@ This repository contains the initial stage of a student project to build a clone
 ```
 (hbnb)
 ```
-5. This prompt designates you are in the "HBnB" console. There are a variety of commands available within the console program.
+5. The prompt (hbnb) designates that you are in the "HBnB" console. There are a variety of commands available within the console program.
 
 ##### Commands
     * create - Creates an instance based on given class
