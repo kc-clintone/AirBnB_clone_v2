@@ -1,9 +1,8 @@
 #!/usr/bin/python3
 """
-Unit test module for the console
+Unit test for the console
 """
 import json
-import MySQLdb
 import os
 import sqlalchemy
 import unittest
@@ -17,131 +16,133 @@ from tests import clear_stream
 
 
 class TestHBNBCommand(unittest.TestCase):
-    """Represents the test class for the HBNBCommand class.
+    """
+    Test class for the HBNBCommand class.
     """
     @unittest.skipIf(
         os.getenv('HBNB_TYPE_STORAGE') == 'db', 'FileStorage test')
-    def test_fs_create(self):
-        """Tests the create command with the file storage.
+    def test_for_fs_create(self):
+        """
+        Tests for create command with the file storage.
         """
         with patch('sys.stdout', new=StringIO()) as cout:
-            cons = HBNBCommand()
-            cons.onecmd('create City name="Texas"')
-            mdl_id = cout.getvalue().strip()
+            x = HBNBCommand()
+            x.onecmd('create City name="New York"')
+            y = cout.getvalue().strip()
             clear_stream(cout)
-            self.assertIn('City.{}'.format(mdl_id), storage.all().keys())
-            cons.onecmd('show City {}'.format(mdl_id))
-            self.assertIn("'name': 'Texas'", cout.getvalue().strip())
+            self.assertIn('City.{}'.format(y), storage.all().keys())
+            x.onecmd('show City {}'.format(y))
+            self.assertIn("'name': 'New York'", cout.getvalue().strip())
             clear_stream(cout)
-            cons.onecmd('create User name="James" age=17 height=5.9')
-            mdl_id = cout.getvalue().strip()
-            self.assertIn('User.{}'.format(mdl_id), storage.all().keys())
+            x.onecmd('create User name="Kaysee" age=17 height=5.9')
+            y = cout.getvalue().strip()
+            self.assertIn('User.{}'.format(y), storage.all().keys())
             clear_stream(cout)
-            cons.onecmd('show User {}'.format(mdl_id))
-            self.assertIn("'name': 'James'", cout.getvalue().strip())
+            x.onecmd('show User {}'.format(y))
+            self.assertIn("'name': 'Kaysee'", cout.getvalue().strip())
             self.assertIn("'age': 17", cout.getvalue().strip())
             self.assertIn("'height': 5.9", cout.getvalue().strip())
 
     @unittest.skipIf(
         os.getenv('HBNB_TYPE_STORAGE') != 'db', 'DBStorage test')
-    def test_db_create(self):
-        """Tests the create command with the database storage.
+    def test_for_db_create(self):
+        """
+        Tests for create command with the database storage.
         """
         with patch('sys.stdout', new=StringIO()) as cout:
-            cons = HBNBCommand()
-            # creating a model with non-null attribute(s)
+            x = HBNBCommand()
             with self.assertRaises(sqlalchemy.exc.OperationalError):
-                cons.onecmd('create User')
-            # creating a User instance
+                x.onecmd('create User')
             clear_stream(cout)
-            cons.onecmd('create User email="john25@gmail.com" password="123"')
-            mdl_id = cout.getvalue().strip()
-            dbc = MySQLdb.connect(
+            x.onecmd('create User email="kaysee17@gmail.com" password="234"')
+            y = cout.getvalue().strip()
+            url = dbcon.connect(
                 host=os.getenv('HBNB_MYSQL_HOST'),
                 port=3306,
                 user=os.getenv('HBNB_MYSQL_USER'),
                 passwd=os.getenv('HBNB_MYSQL_PWD'),
                 db=os.getenv('HBNB_MYSQL_DB')
             )
-            cursor = dbc.cursor()
-            cursor.execute('SELECT * FROM users WHERE id="{}"'.format(mdl_id))
-            result = cursor.fetchone()
+            cursor = url.cursor()
+            cursor.execute('SELECT * FROM users WHERE id="{}"'.format(y))
+            res = cursor.fetchone()
             self.assertTrue(result is not None)
-            self.assertIn('john25@gmail.com', result)
-            self.assertIn('123', result)
+            self.assertIn('kaysee17@gmail.com', res)
+            self.assertIn('123', res)
             cursor.close()
-            dbc.close()
+            url.close()
 
     @unittest.skipIf(
         os.getenv('HBNB_TYPE_STORAGE') != 'db', 'DBStorage test')
-    def test_db_show(self):
-        """Tests the show command with the database storage.
+    def test_for_db_show(self):
+        """
+        Tests for show command with the database storage.
         """
         with patch('sys.stdout', new=StringIO()) as cout:
-            cons = HBNBCommand()
-            # showing a User instance
-            obj = User(email="john25@gmail.com", password="123")
-            dbc = MySQLdb.connect(
+            x = HBNBCommand()
+            obj = User(email="kaysee17@gmail.com", password="234")
+            url = dbcon.connect(
                 host=os.getenv('HBNB_MYSQL_HOST'),
                 port=3306,
                 user=os.getenv('HBNB_MYSQL_USER'),
                 passwd=os.getenv('HBNB_MYSQL_PWD'),
                 db=os.getenv('HBNB_MYSQL_DB')
             )
-            cursor = dbc.cursor()
+            cursor = url.cursor()
             cursor.execute('SELECT * FROM users WHERE id="{}"'.format(obj.id))
-            result = cursor.fetchone()
+            res = cursor.fetchone()
             self.assertTrue(result is None)
-            cons.onecmd('show User {}'.format(obj.id))
+            x.onecmd('show User {}'.format(obj.id))
             self.assertEqual(
                 cout.getvalue().strip(),
                 '** no instance found **'
             )
             obj.save()
-            dbc = MySQLdb.connect(
+            url = dbcon.connect(
                 host=os.getenv('HBNB_MYSQL_HOST'),
                 port=3306,
                 user=os.getenv('HBNB_MYSQL_USER'),
                 passwd=os.getenv('HBNB_MYSQL_PWD'),
                 db=os.getenv('HBNB_MYSQL_DB')
             )
-            cursor = dbc.cursor()
+            cursor = url.cursor()
             cursor.execute('SELECT * FROM users WHERE id="{}"'.format(obj.id))
             clear_stream(cout)
-            cons.onecmd('show User {}'.format(obj.id))
-            result = cursor.fetchone()
-            self.assertTrue(result is not None)
-            self.assertIn('john25@gmail.com', result)
-            self.assertIn('123', result)
-            self.assertIn('john25@gmail.com', cout.getvalue())
-            self.assertIn('123', cout.getvalue())
+            x.onecmd('show User {}'.format(obj.id))
+            res = cursor.fetchone()
+            self.assertTrue(res is not None)
+            self.assertIn('kaysee27@gmail.com', res)
+            self.assertIn('234', res)
+            self.assertIn('kaysee17@gmail.com', cout.getvalue())
+            self.assertIn('234', cout.getvalue())
             cursor.close()
-            dbc.close()
+            url.close()
 
     @unittest.skipIf(
         os.getenv('HBNB_TYPE_STORAGE') != 'db', 'DBStorage test')
-    def test_db_count(self):
-        """Tests the count command with the database storage.
+    def test_for_db_count(self):
+        """
+        Tests for count command with the database storage.
         """
         with patch('sys.stdout', new=StringIO()) as cout:
-            cons = HBNBCommand()
-            dbc = MySQLdb.connect(
+            x = HBNBCommand()
+            url = dbcon.connect(
                 host=os.getenv('HBNB_MYSQL_HOST'),
                 port=3306,
                 user=os.getenv('HBNB_MYSQL_USER'),
                 passwd=os.getenv('HBNB_MYSQL_PWD'),
                 db=os.getenv('HBNB_MYSQL_DB')
             )
-            cursor = dbc.cursor()
+            cursor = url.cursor()
             cursor.execute('SELECT COUNT(*) FROM states;')
             res = cursor.fetchone()
-            prev_count = int(res[0])
+            pc = int(res[0])
             cons.onecmd('create State name="Enugu"')
             clear_stream(cout)
-            cons.onecmd('count State')
-            cnt = cout.getvalue().strip()
-            self.assertEqual(int(cnt), prev_count + 1)
+            x.onecmd('count State')
+            count_this = cout.getvalue().strip()
+            self.assertEqual(int(count_this), pc + 1)
             clear_stream(cout)
-            cons.onecmd('count State')
+            x.onecmd('count State')
             cursor.close()
-            dbc.close()
+            url.close()
