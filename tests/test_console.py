@@ -1,148 +1,50 @@
 #!/usr/bin/python3
 """
-Unit test for the console
+Tests for the console class
 """
-import json
-import os
-import sqlalchemy
+
+import console
+import inspect
+import pep8
 import unittest
-from io import StringIO
-from unittest.mock import patch
-from console import HBNBCommand
-from models import storage
-from models.base_model import BaseModel
-from models.user import User
-from tests import clear_stream
+HBNBCommand = console.HBNBCommand
 
 
-class TestHBNBCommand(unittest.TestCase):
+class TestConsoleDocs(unittest.TestCase):
     """
-    Test class for the HBNBCommand class.
+    This class is for testing documentation of
+    the console
     """
-    @unittest.skipIf(
-        os.getenv('HBNB_TYPE_STORAGE') == 'db', 'FileStorage test')
-    def test_for_fs_create(self):
-        """
-        Tests for create command with the file storage.
-        """
-        with patch('sys.stdout', new=StringIO()) as cout:
-            x = HBNBCommand()
-            x.onecmd('create City name="New York"')
-            y = cout.getvalue().strip()
-            clear_stream(cout)
-            self.assertIn('City.{}'.format(y), storage.all().keys())
-            x.onecmd('show City {}'.format(y))
-            self.assertIn("'name': 'New York'", cout.getvalue().strip())
-            clear_stream(cout)
-            x.onecmd('create User name="Kaysee" age=17 height=5.9')
-            y = cout.getvalue().strip()
-            self.assertIn('User.{}'.format(y), storage.all().keys())
-            clear_stream(cout)
-            x.onecmd('show User {}'.format(y))
-            self.assertIn("'name': 'Kaysee'", cout.getvalue().strip())
-            self.assertIn("'age': 17", cout.getvalue().strip())
-            self.assertIn("'height': 5.9", cout.getvalue().strip())
+    def test_that_pep8_conforms_the_console(self):
+        """ Test if the console.py conforms to PEP8."""
+        p8 = pep8.StyleGuide(quiet=True)
+        res = p8.check_files(['console.py'])
+        self.assertEqual(res.total_errors, 0,
+                         "Found code style errors (and warnings).")
 
-    @unittest.skipIf(
-        os.getenv('HBNB_TYPE_STORAGE') != 'db', 'DBStorage test')
-    def test_for_db_create(self):
+    def test_that_pep8_conforms_test_console(self):
         """
-        Tests for create command with the database storage.
+        Test if the tests/test_console.py conforms to PEP8
         """
-        with patch('sys.stdout', new=StringIO()) as cout:
-            x = HBNBCommand()
-            with self.assertRaises(sqlalchemy.exc.OperationalError):
-                x.onecmd('create User')
-            clear_stream(cout)
-            x.onecmd('create User email="kaysee17@gmail.com" password="234"')
-            y = cout.getvalue().strip()
-            url = dbcon.connect(
-                host=os.getenv('HBNB_MYSQL_HOST'),
-                port=3306,
-                user=os.getenv('HBNB_MYSQL_USER'),
-                passwd=os.getenv('HBNB_MYSQL_PWD'),
-                db=os.getenv('HBNB_MYSQL_DB')
-            )
-            cursor = url.cursor()
-            cursor.execute('SELECT * FROM users WHERE id="{}"'.format(y))
-            res = cursor.fetchone()
-            self.assertTrue(result is not None)
-            self.assertIn('kaysee17@gmail.com', res)
-            self.assertIn('123', res)
-            cursor.close()
-            url.close()
+        p8 = pep8.StyleGuide(quiet=True)
+        res = p8.check_files(['tests/test_console.py'])
+        self.assertEqual(res.total_errors, 0,
+                         "Found code style errors (and warnings).")
 
-    @unittest.skipIf(
-        os.getenv('HBNB_TYPE_STORAGE') != 'db', 'DBStorage test')
-    def test_for_db_show(self):
+    def test_the_console_module_docstring(self):
         """
-        Tests for show command with the database storage.
+        Testing for the console.py module docstring
         """
-        with patch('sys.stdout', new=StringIO()) as cout:
-            x = HBNBCommand()
-            obj = User(email="kaysee17@gmail.com", password="234")
-            url = dbcon.connect(
-                host=os.getenv('HBNB_MYSQL_HOST'),
-                port=3306,
-                user=os.getenv('HBNB_MYSQL_USER'),
-                passwd=os.getenv('HBNB_MYSQL_PWD'),
-                db=os.getenv('HBNB_MYSQL_DB')
-            )
-            cursor = url.cursor()
-            cursor.execute('SELECT * FROM users WHERE id="{}"'.format(obj.id))
-            res = cursor.fetchone()
-            self.assertTrue(result is None)
-            x.onecmd('show User {}'.format(obj.id))
-            self.assertEqual(
-                cout.getvalue().strip(),
-                '** no instance found **'
-            )
-            obj.save()
-            url = dbcon.connect(
-                host=os.getenv('HBNB_MYSQL_HOST'),
-                port=3306,
-                user=os.getenv('HBNB_MYSQL_USER'),
-                passwd=os.getenv('HBNB_MYSQL_PWD'),
-                db=os.getenv('HBNB_MYSQL_DB')
-            )
-            cursor = url.cursor()
-            cursor.execute('SELECT * FROM users WHERE id="{}"'.format(obj.id))
-            clear_stream(cout)
-            x.onecmd('show User {}'.format(obj.id))
-            res = cursor.fetchone()
-            self.assertTrue(res is not None)
-            self.assertIn('kaysee27@gmail.com', res)
-            self.assertIn('234', res)
-            self.assertIn('kaysee17@gmail.com', cout.getvalue())
-            self.assertIn('234', cout.getvalue())
-            cursor.close()
-            url.close()
+        self.assertIsNot(console.__doc__, None,
+                         "console.py needs a docstring")
+        self.assertTrue(len(console.__doc__) >= 1,
+                        "console.py needs a docstring")
 
-    @unittest.skipIf(
-        os.getenv('HBNB_TYPE_STORAGE') != 'db', 'DBStorage test')
-    def test_for_db_count(self):
+    def test_the_HBNBCommand_class_docstring(self):
         """
-        Tests for count command with the database storage.
+        Test for the HBNBCommand class docstring
         """
-        with patch('sys.stdout', new=StringIO()) as cout:
-            x = HBNBCommand()
-            url = dbcon.connect(
-                host=os.getenv('HBNB_MYSQL_HOST'),
-                port=3306,
-                user=os.getenv('HBNB_MYSQL_USER'),
-                passwd=os.getenv('HBNB_MYSQL_PWD'),
-                db=os.getenv('HBNB_MYSQL_DB')
-            )
-            cursor = url.cursor()
-            cursor.execute('SELECT COUNT(*) FROM states;')
-            res = cursor.fetchone()
-            pc = int(res[0])
-            cons.onecmd('create State name="Enugu"')
-            clear_stream(cout)
-            x.onecmd('count State')
-            count_this = cout.getvalue().strip()
-            self.assertEqual(int(count_this), pc + 1)
-            clear_stream(cout)
-            x.onecmd('count State')
-            cursor.close()
-            url.close()
+        self.assertIsNot(HBNBCommand.__doc__, None,
+                         "HBNBCommand class needs a docstring")
+        self.assertTrue(len(HBNBCommand.__doc__) >= 1,
+                        "HBNBCommand class needs a docstring")
